@@ -3,12 +3,4 @@ COP 4020
 Python Homework 1
 22 March 2016
 
-This folder contains the main homework assignment, the extra credit, and some helper functions.
-If you do not have helpers.py, student.py, and PyHomework1.py, then you do not have the complete
-submission. Please email me in this case.
-
-Here's what happens when you run each Python script in this folder:
-
-palmerjoshua2013_PyHomework1.py - runs the main assignment and the extra credit
-palmerjoshua2013_student.py     - runs only the extra credit
-palmerjoshua2013_helpers.py     - prints a message telling the user to run the main assignment script
+This file contains the main homework assignment, the extra credit, and some helper functions.
