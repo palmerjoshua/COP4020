@@ -5,9 +5,18 @@ from palmerjoshua2013_PyHomework1 import make_pretty  # will probably need to co
 pp = pprint.PrettyPrinter(indent=4)
 
 
+
+
 states, shows, viewers = [], [], []
 
 LABELS = ("STATES:", "SHOWS:", "VIEWERS:")
+
+def _print_div_lists(pretty_list=False):
+    fn = (lambda lst: pp.pprint(lst)) if pretty_list else (lambda lst: print(lst))
+    for label, lst in zip(LABELS, (states, shows, viewers)):
+        print(label, end=' ')
+        fn(lst)
+
 
 n_array = None
 
@@ -36,11 +45,7 @@ def divide_numpy_array():
     states = list(set([item[0] for item in n_array]))
     shows = list(set([item[1] for item in n_array]))
     viewers = [item[2] for item in n_array]
-    for label, lst in zip(LABELS, (states, shows, viewers)):
-        print(label, lst)
-
-    #data = {'states': states, 'shows': shows, 'viewers': viewers}  # not required; just convenient
-    #pp.pprint(data)
+    _print_div_lists()
 
 @make_pretty("DIV ARRAYS")
 def div_arrays():
@@ -48,9 +53,8 @@ def div_arrays():
     states = np.array(states)
     shows = np.array(shows)
     viewers = np.array(viewers)
-    for label, lst in zip(LABELS, (states, shows, viewers)):
-        print(label, end=" ")
-        pp.pprint(lst)
+    _print_div_lists(True)
+
 
 @make_pretty("SORT ARRAYS")
 def sort_arrays():
@@ -59,10 +63,8 @@ def sort_arrays():
     shows.sort()
     viewers = np.array([int(i) for i in viewers])
     count = sum(i for i in viewers)
-    for label, lst in zip(LABELS, (states, shows, viewers)):
-        print(label, lst)
+    _print_div_lists()
     print('Sum:', count)
-
 
 
 def main():
