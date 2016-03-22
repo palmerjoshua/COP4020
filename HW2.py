@@ -6,6 +6,9 @@ pp = pprint.PrettyPrinter(indent=4)
 
 
 states, shows, viewers = [], [], []
+
+LABELS = ("STATES:", "SHOWS:", "VIEWERS:")
+
 n_array = None
 
 @make_pretty("CREATE N_ARRAY")
@@ -33,8 +36,11 @@ def divide_numpy_array():
     states = list(set([item[0] for item in n_array]))
     shows = list(set([item[1] for item in n_array]))
     viewers = [item[2] for item in n_array]
-    data = {'states': states, 'shows': shows, 'viewers': viewers}  # not required; just convenient
-    pp.pprint(data)
+    for label, lst in zip(LABELS, (states, shows, viewers)):
+        print(label, lst)
+
+    #data = {'states': states, 'shows': shows, 'viewers': viewers}  # not required; just convenient
+    #pp.pprint(data)
 
 @make_pretty("DIV ARRAYS")
 def div_arrays():
@@ -42,7 +48,8 @@ def div_arrays():
     states = np.array(states)
     shows = np.array(shows)
     viewers = np.array(viewers)
-    for lst in (states, shows, viewers):
+    for label, lst in zip(LABELS, (states, shows, viewers)):
+        print(label, end=" ")
         pp.pprint(lst)
 
 @make_pretty("SORT ARRAYS")
@@ -52,10 +59,8 @@ def sort_arrays():
     shows.sort()
     viewers = np.array([int(i) for i in viewers])
     count = sum(i for i in viewers)
-
-    print('States:', states)
-    print('Shows:', shows)
-    print('Viewers:', viewers)
+    for label, lst in zip(LABELS, (states, shows, viewers)):
+        print(label, lst)
     print('Sum:', count)
 
 
