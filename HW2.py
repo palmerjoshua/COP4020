@@ -1,7 +1,18 @@
+#region HEADER
+"""
+Joshua Palmer
+COP 4020
+Python Homework 2
+April 5, 2016
+"""
+#endregion
+
+#region IMPORTS
 import numpy as np
 import pandas as pd
 import pprint
 from palmerjoshua2013_PyHomework1 import make_pretty  # will probably need to copy to this file before submission
+#endregion
 
 #region HELPER CLASSES
 class MyDict(dict):
@@ -97,25 +108,24 @@ def sort_arrays():
     sorted_ = {label: sorted(lst) for label, lst in (data - LABELS.viewers).items()}
     count = sum(int(i) for i in data[LABELS.viewers])
     _print_div_lists(True, sorted_)
-    print('SUM:', count)
+    print(LABELS.sum, count)
 #endregion
 
 #region DATA FRAMES
 @make_pretty("DATA FRAME")
-def make_data_frame():
-    label = LABELS.viewers
-    df = pd.DataFrame((RAW_DICT - label), index=RAW_DICT[label])
-    df.sort_index()
+def make_data_frames():
+    df = pd.read_csv('show_results.txt')
+    df.columns = LABELS.ordered()
+    print(df.describe())
     print(df)
 #endregion
 
 
 def main():
     load()
-    create_numpy_array()
-    div_arrays()
-    sort_arrays()
-    make_data_frame()
+    #div_arrays()
+    #sort_arrays()
+    make_data_frames()
 
 if __name__ == '__main__':
     main()
