@@ -7,14 +7,17 @@ April 5, 2016
 """
 #endregion
 
+
 #region IMPORTS
 import numpy as np
 import pandas as pd
 import pprint
+from collections import Counter
 from palmerjoshua2013_PyHomework1 import make_pretty  # will probably need to copy to this file before submission
 #endregion
 
-#region HELPER CLASSES
+
+# region HELPER CLASSES
 class MyDict(dict):
     """This is a simple subclass of the built in dictionary. The only added functionality is that it can be used with
     the subtraction operator, e.g.
@@ -41,10 +44,11 @@ class MyDict(dict):
 
 
 class LABELS:
-    states = "STATES:"
-    shows = "SHOWS:"
-    viewers = "VIEWERS:"
-    sum = "SUM:"
+    states = "STATES"
+    shows = "SHOWS"
+    viewers = "VIEWERS"
+    sum = "SUM"
+    total = "Total"
 
     @staticmethod
     def ordered():
@@ -53,28 +57,42 @@ class LABELS:
         yield LABELS.viewers
 #endregion
 
+
 #region GLOBAL VARIABLES
 pp = pprint.PrettyPrinter(indent=4)
 RAW_DICT = MyDict({label: [] for label in LABELS.ordered()})
-RAW_DATA = None
-data = None
+RAW_DATA = []
+data = MyDict()
 n_array = None
 #endregion
+
 
 #region HELPER FUNCTIONS
 def _save_data(lines):
     global RAW_DATA, RAW_DICT, data
     RAW_DATA = [[item for item in line.split(",")] for line in lines]
-    RAW_DICT = MyDict({label: [line[i] for line in RAW_DATA] for i, label in enumerate(LABELS.ordered())})
+    RAW_DICT = MyDict({label: [line[i] for line in RAW_DATA]
+                       for i, label in enumerate(LABELS.ordered())})
     data = MyDict({label: list(set(lst)) for label, lst in RAW_DICT.items()})
 
 
-def _print_div_lists(pretty_list=False, particular_dict=None):
-    fn = (lambda lst: pp.pprint(lst)) if pretty_list else (lambda lst: print(lst))
+def _print_dict(particular_dict=None, pretty=True):
+    fn = (lambda lst: pp.pprint(lst)) if pretty else (lambda lst: print(lst))
     to_print = particular_dict or data
     for label, lst in to_print.items():
         print(label, end=' ')
         fn(lst)
+
+
+def _get_viewers_by_state():
+    viewers = {state: {show: 0 for show in data[LABELS.shows]} for state in data[LABELS.states]}
+    viewers[LABELS.total] = {show: 0 for show in data[LABELS.shows]}
+    for line in RAW_DATA:
+        state, show, view = line[0], line[1], int(line[2])
+        viewers[state][show] += view
+        viewers[LABELS.total][show] += view
+    return viewers
+
 
 
 def load():
@@ -86,6 +104,7 @@ def load():
         else:
             _save_data(lines)
 #endregion
+
 
 #region NUMPY ARRAYS
 @make_pretty("NUMPY ARRAY (whole)")
@@ -100,23 +119,30 @@ def create_numpy_array():
 def div_arrays():
     global data
     n_arrays = {label: np.array(lst) for label, lst in data.items()}
-    _print_div_lists(True, particular_dict=n_arrays)
+    _print_dict(n_arrays)
 
 
 @make_pretty("SORT ARRAYS")
 def sort_arrays():
-    sorted_ = {label: sorted(lst) for label, lst in (data - LABELS.viewers).items()}
-    count = sum(int(i) for i in data[LABELS.viewers])
-    _print_div_lists(True, sorted_)
+    global data
+    viewers = LABELS.viewers
+    data = MyDict({label: sorted(lst) if label != viewers else [int(i) for i in lst]
+                   for label, lst in data.items()})
+    count = sum(i for i in data[viewers])
+    _print_dict(data - viewers)
     print(LABELS.sum, count)
 #endregion
+
 
 #region DATA FRAMES
 @make_pretty("DATA FRAME")
 def make_data_frames():
-    df = pd.read_csv('show_results.txt')
-    df.columns = LABELS.ordered()
-    print(df.describe())
+    viewers = _get_viewers_by_state()
+    df = pd.DataFrame.from_dict(viewers)
+    cols = df.columns.tolist()
+    cols[-1], cols[-2] = cols[-2], cols[-1]  # move 'Total' column to end of the DataFrame
+    df = df[cols]
+    df.sort_values(by=LABELS.total, ascending=False, inplace=True)
     print(df)
 #endregion
 
