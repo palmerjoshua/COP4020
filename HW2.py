@@ -162,7 +162,6 @@ def sort_arrays():
 def make_data_frames():
     viewers = _get_viewers_by_state()
     df = pd.DataFrame.from_dict(viewers)
-    cols = df.columns.tolist()
     print(df)
     print(df.describe())
 # endregion
