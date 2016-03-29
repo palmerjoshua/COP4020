@@ -86,11 +86,11 @@ def _save_data(lines):
 
 
 def _print_dict(particular_dict=None, pretty=True):
-    fn = (lambda lst: pp.pprint(lst)) if pretty else (lambda lst: print(lst))
+    print_fn = pp.pprint if pretty else print
     to_print = particular_dict or data
     for label, lst in to_print.items():
         print(label+":", end=' ')
-        fn(lst)
+        print_fn(lst)
 
 
 def _get_viewers_by_state():
