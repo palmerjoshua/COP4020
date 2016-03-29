@@ -1,20 +1,19 @@
-#region HEADER
+# region HEADER
 """
 Joshua Palmer
 COP 4020
 Python Homework 2
 April 5, 2016
 """
-#endregion
+# endregion
 
 
-#region IMPORTS
+# region IMPORTS
 import numpy as np
 import pandas as pd
 import pprint
-from collections import Counter
 from palmerjoshua2013_PyHomework1 import make_pretty  # will probably need to copy to this file before submission
-#endregion
+# endregion
 
 
 # region HELPER CLASSES
@@ -44,30 +43,40 @@ class MyDict(dict):
 
 
 class LABELS:
-    states = "STATES"
-    shows = "SHOWS"
-    viewers = "VIEWERS"
-    sum = "SUM"
+    states = "States"
+    shows = "Shows"
+    viewers = "Viewers"
+    sum = "Sum"
     total = "Total"
+    maximum = "Max"
+    minimum = "Min"
+    percent = "Percent"
 
     @staticmethod
     def ordered():
-        yield LABELS.states
-        yield LABELS.shows
-        yield LABELS.viewers
-#endregion
+        return LABELS._label_generator(LABELS.states, LABELS.shows, LABELS.viewers)
+
+    @staticmethod
+    def ordered_stats():
+        return LABELS._label_generator(LABELS.maximum, LABELS.minimum, LABELS.total, LABELS.percent)
+
+    @staticmethod
+    def _label_generator(*labels):
+        for label in labels:
+            yield label
+# endregion
 
 
-#region GLOBAL VARIABLES
+# region GLOBAL VARIABLES
 pp = pprint.PrettyPrinter(indent=4)
 RAW_DICT = MyDict({label: [] for label in LABELS.ordered()})
 RAW_DATA = []
 data = MyDict()
 n_array = None
-#endregion
+# endregion
 
 
-#region HELPER FUNCTIONS
+# region HELPER FUNCTIONS
 def _save_data(lines):
     global RAW_DATA, RAW_DICT, data
     RAW_DATA = [[item for item in line.split(",")] for line in lines]
@@ -80,19 +89,33 @@ def _print_dict(particular_dict=None, pretty=True):
     fn = (lambda lst: pp.pprint(lst)) if pretty else (lambda lst: print(lst))
     to_print = particular_dict or data
     for label, lst in to_print.items():
-        print(label, end=' ')
+        print(label+":", end=' ')
         fn(lst)
 
 
 def _get_viewers_by_state():
-    viewers = {state: {show: 0 for show in data[LABELS.shows]} for state in data[LABELS.states]}
-    viewers[LABELS.total] = {show: 0 for show in data[LABELS.shows]}
+    return _get_viewers_(LABELS.states, LABELS.shows, False)
+
+
+def _get_viewers_by_show():
+    return _get_viewers_(LABELS.shows, LABELS.states, False)
+
+
+def _get_viewers_(outer_label, inner_label, include_total=True):
+    viewers = {outer: {inner: 0 for inner in data[inner_label]} for outer in data[outer_label]}
+    if include_total:
+        viewers[LABELS.total] = {inner: 0 for inner in data[inner_label]}
     for line in RAW_DATA:
         state, show, view = line[0], line[1], int(line[2])
-        viewers[state][show] += view
-        viewers[LABELS.total][show] += view
+        (inner, outer) = (state, show) if inner_label == LABELS.states else (show, state)
+        viewers[outer][inner] += view
+        if include_total:
+            viewers[LABELS.total][inner] += view
     return viewers
 
+
+def _get_show_stats(current_viewer_dict=None):
+    pass
 
 
 def load():
@@ -103,10 +126,10 @@ def load():
             print("Could not find input file.")
         else:
             _save_data(lines)
-#endregion
+# endregion
 
 
-#region NUMPY ARRAYS
+# region NUMPY ARRAYS
 @make_pretty("NUMPY ARRAY (whole)")
 def create_numpy_array():
     global n_array, RAW_DATA
@@ -130,27 +153,25 @@ def sort_arrays():
                    for label, lst in data.items()})
     count = sum(i for i in data[viewers])
     _print_dict(data - viewers)
-    print(LABELS.sum, count)
-#endregion
+    print(LABELS.sum+":", count)
+# endregion
 
 
-#region DATA FRAMES
+# region DATA FRAMES
 @make_pretty("DATA FRAME")
 def make_data_frames():
     viewers = _get_viewers_by_state()
     df = pd.DataFrame.from_dict(viewers)
     cols = df.columns.tolist()
-    cols[-1], cols[-2] = cols[-2], cols[-1]  # move 'Total' column to end of the DataFrame
-    df = df[cols]
-    df.sort_values(by=LABELS.total, ascending=False, inplace=True)
     print(df)
-#endregion
+    print(df.describe())
+# endregion
 
 
 def main():
     load()
-    #div_arrays()
-    #sort_arrays()
+    div_arrays()
+    sort_arrays()
     make_data_frames()
 
 if __name__ == '__main__':
