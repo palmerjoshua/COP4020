@@ -107,7 +107,7 @@ def _get_viewers_(outer_label, inner_label, include_total=True):
         viewers[LABELS.total] = {inner: 0 for inner in data[inner_label]}
     for line in RAW_DATA:
         state, show, view = line[0], line[1], int(line[2])
-        (inner, outer) = (state, show) if inner_label == LABELS.states else (show, state)
+        (outer, inner) = (state, show) if outer_label == LABELS.states else (show, state)
         viewers[outer][inner] += view
         if include_total:
             viewers[LABELS.total][inner] += view
