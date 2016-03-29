@@ -46,7 +46,7 @@ class LABELS:
     states = "States"
     shows = "Shows"
     viewers = "Viewers"
-    sum = "Sum"
+    sum_ = "Sum"
     total = "Total"
     maximum = "Max"
     minimum = "Min"
@@ -153,7 +153,7 @@ def sort_arrays():
                    for label, lst in data.items()})
     count = sum(i for i in data[viewers])
     _print_dict(data - viewers)
-    print(LABELS.sum+":", count)
+    print(LABELS.sum_ + ":", count)
 # endregion
 
 
