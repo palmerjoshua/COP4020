@@ -34,9 +34,9 @@ class MyDict(dict):
         is_container = hasattr(other, '__iter__') and type(other) is not str
         if not is_container:
             other = {other}
-        return self.__set_filter__(other)
+        return self._set_filter_(other)
 
-    def __set_filter__(self, other):
+    def _set_filter_(self, other):
         to_delete = set(other.keys()) if type(other) is dict else set(other)
         to_keep = set(self.keys()) - to_delete
         return {k: self[k] for k in to_keep}
@@ -115,7 +115,21 @@ def _get_viewers_(outer_label, inner_label, include_total=True):
 
 
 def _get_show_stats(current_viewer_dict=None):
-    pass
+    stats = {label: {show: 0 for show in data[LABELS.shows]} for label in LABELS.ordered_stats()}
+    by_show = _get_viewers_by_show()
+    total_viewers = sum(int(i) for i in data[LABELS.viewers])
+    for show in by_show:
+        stats[LABELS.maximum][show] = max(by_show[show].values())
+        stats[LABELS.minimum][show] = min(by_show[show].values())
+        stats[LABELS.total][show] = sum(val for val in by_show[show].values())
+        stats[LABELS.percent][show] = "{:2.2f}".format((stats[LABELS.total][show] / total_viewers) * 100)
+    return stats
+
+
+def _swap_last_columns(data_frame):
+    cols = list(data_frame)
+    cols[-2], cols[-1] = cols[-1], cols[-2]
+    return data_frame[cols]
 
 
 def load():
@@ -158,12 +172,12 @@ def sort_arrays():
 
 
 # region DATA FRAMES
-@make_pretty("DATA FRAME")
-def make_data_frames():
-    viewers = _get_viewers_by_state()
-    df = pd.DataFrame.from_dict(viewers)
-    print(df)
-    print(df.describe())
+@make_pretty("DATA FRAMES")
+def data_frames():
+    viewer_frame = pd.DataFrame.from_dict(_get_viewers_by_state())
+    stats_frame = pd.DataFrame.from_dict(_get_show_stats())
+    print(viewer_frame, end="\n\n")
+    print(_swap_last_columns(stats_frame))
 # endregion
 
 
@@ -171,7 +185,7 @@ def main():
     load()
     div_arrays()
     sort_arrays()
-    make_data_frames()
+    data_frames()
 
 if __name__ == '__main__':
     main()
