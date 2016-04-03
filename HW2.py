@@ -69,7 +69,6 @@ class LABELS:
 
 # region GLOBAL VARIABLES
 pp = pprint.PrettyPrinter(indent=4)
-RAW_DICT = MyDict({label: [] for label in LABELS.ordered()})
 RAW_DATA = []
 data = MyDict()
 n_array = None
@@ -78,11 +77,10 @@ n_array = None
 
 # region HELPER FUNCTIONS
 def _save_data(lines):
-    global RAW_DATA, RAW_DICT, data
+    global RAW_DATA, data
     RAW_DATA = [[item for item in line.split(",")] for line in lines]
-    RAW_DICT = MyDict({label: [line[i] for line in RAW_DATA]
-                       for i, label in enumerate(LABELS.ordered())})
-    data = MyDict({label: list(set(lst)) for label, lst in RAW_DICT.items()})
+    data = MyDict({label: list(set(line[i] for line in RAW_DATA))
+                   for i, label in enumerate(LABELS.ordered())})
 
 
 def _print_dict(particular_dict=None, pretty=True):
