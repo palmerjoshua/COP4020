@@ -12,7 +12,6 @@ April 5, 2016
 import numpy as np
 import pandas as pd
 import pprint
-from palmerjoshua2013_PyHomework1 import make_pretty  # will probably need to copy to this file before submission
 # endregion
 
 
@@ -156,6 +155,25 @@ def _get_show_stats():
         stats[LABELS.total][show] = sum(val for val in by_show[show].values())
         stats[LABELS.percent][show] = "{:2.2f}".format((stats[LABELS.total][show] / total_viewers) * 100)
     return stats
+
+
+def make_pretty(title):
+    """This decorator is used to print a header and footer around my output. Instead of littering every
+       function with the same prints, prepending them with this decorator will automatically add them for me.
+       :param title - The title of the section that will be printed. Can be any string."""
+
+    length = 20  # length of each side of the header
+    symbol = "#"  # the symbol used to print the header
+    bottom_length = 2 + 2*length + len(title)  # length of the footer
+
+    def decorator(func):
+        def wrapper():
+            print(symbol*length, title, symbol*length)  # print header
+            func()  # call original function
+            print(symbol*bottom_length)  # print footer
+            print()  # print blank line
+        return wrapper
+    return decorator
 # endregion
 
 
