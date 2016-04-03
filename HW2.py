@@ -74,7 +74,6 @@ class LABELS:
 pp = pprint.PrettyPrinter(indent=4)
 RAW_DATA = []
 data = MyDict()
-n_array = None
 # endregion
 
 
@@ -120,6 +119,13 @@ def _get_viewers_by_show():
 
 
 def _get_viewers_(outer_label, inner_label, include_total=True):
+    """
+    Converts the raw data into a nested dictionary.
+    :param outer_label: Specifies the outer keys, i.e. the columns (either states or shows)
+    :param inner_label: Specifies the inner keys, i.e. the rows
+    :param include_total: If True, add an extra "Total" column
+    :return: dictionary of viewer data
+    """
     viewers = {outer: {inner: 0 for inner in data[inner_label]} for outer in data[outer_label]}
     if include_total:
         viewers[LABELS.total] = {inner: 0 for inner in data[inner_label]}
@@ -132,7 +138,15 @@ def _get_viewers_(outer_label, inner_label, include_total=True):
     return viewers
 
 
-def _get_show_stats(current_viewer_dict=None):
+def _get_show_stats():
+    """
+    Generates more statistics about each show, such as:
+    1. Max number of viewers
+    2. Min number of viewers
+    3. Total number of viewers
+    4. Percentage of viewers
+    :return: dictionary of viewer data
+    """
     stats = {label: {show: 0 for show in data[LABELS.shows]} for label in LABELS.ordered_stats()}
     by_show = _get_viewers_by_show()
     total_viewers = sum(int(i) for i in data[LABELS.viewers])
@@ -148,7 +162,11 @@ def _get_show_stats(current_viewer_dict=None):
 # region NUMPY ARRAYS
 @make_pretty("NUMPY ARRAY (whole)")
 def create_numpy_array():  # questions 3-4
-    global n_array, RAW_DATA
+    """
+    Converts raw data to a numpy array, and prints it.
+    :return: None
+    """
+    global RAW_DATA
     if RAW_DATA:
         n_array = np.array(RAW_DATA)
         pp.pprint(n_array)
@@ -156,11 +174,20 @@ def create_numpy_array():  # questions 3-4
 
 @make_pretty("SEPARATED REGULAR ARRAYS")
 def div_arrays_reg():  # questions 5-6
+    """
+    Prints the raw data, sorted by state, show, and viewer count.
+    Since the data were separated at the beginning, all that's left to do is print them.
+    :return: None
+    """
     _print_dict(data, False)
 
 
 @make_pretty("SEPARATED NUMPY ARRAYS")
 def div_arrays_np():  # questions 7-8
+    """
+    Same as div_arrays_reg, except the separated arrays are cast into numpy arrays
+    :return: None
+    """
     global data
     n_arrays = {label: np.array(lst) for label, lst in data.items()}
     _print_dict(n_arrays)
@@ -168,12 +195,16 @@ def div_arrays_np():  # questions 7-8
 
 @make_pretty("SORTED ARRAYS")
 def sort_arrays():  # questions 9-12
+    """
+    Sorts 'states' and 'shows', casts each item in 'viewers' to an integer, and prints all three lists.
+    :return: None
+    """
     global data
     viewers = LABELS.viewers
-    data = MyDict({label: sorted(lst) if label != viewers else [int(i) for i in lst]
+    data_copy = MyDict({label: sorted(lst) if label != viewers else [int(i) for i in lst]
                    for label, lst in data.items()})
-    count = sum(i for i in data[viewers])
-    _print_dict(data - viewers)
+    count = sum(i for i in data_copy[viewers])
+    _print_dict(data_copy - viewers)
     print(LABELS.sum_ + ":", count)
 # endregion
 
@@ -181,15 +212,18 @@ def sort_arrays():  # questions 9-12
 # region DATA FRAMES
 @make_pretty("DATA FRAMES")
 def data_frames():  # questions 13-17
+    """
+    Creates two data frames and prints them. Also calculates the max and min percentages, and prints my favorite show.
+    :return: None
+    """
     viewer_frame = pd.DataFrame.from_dict(_get_viewers_by_state())
     stats_frame = pd.DataFrame.from_dict(_get_show_stats())[[lb for lb in LABELS.ordered_stats()]]
 
     print(viewer_frame, end="\n\n")
     print(stats_frame, end="\n\n")
 
-    gen = lambda: (float(i) for i in stats_frame[LABELS.percent].values)
-    max_percent = max(gen())
-    min_percent = min(gen())
+    max_percent = max(float(i) for i in stats_frame[LABELS.percent].values)
+    min_percent = min(float(i) for i in stats_frame[LABELS.percent].values)
 
     print(LABELS.max_pct+':', max_percent)
     print(LABELS.min_pct+':', min_percent)
