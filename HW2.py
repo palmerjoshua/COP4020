@@ -51,6 +51,9 @@ class LABELS:
     maximum = "Max"
     minimum = "Min"
     percent = "Percent"
+    max_pct = "Max %"
+    min_pct = "Min %"
+    favorite = "Favorite"
 
     @staticmethod
     def ordered():
@@ -76,11 +79,28 @@ n_array = None
 
 
 # region HELPER FUNCTIONS
-def _save_data(lines):
+def _save_data(lines):  # question 2
+    """
+    Saves the file data to a raw list of csv, and to a dictionary,
+    e.g. {'States': [...], 'Shows': [...], 'Viewers: [...]}
+    :param lines: list of lines from an input file, i.e. results of ifile.readlines()
+    :return: None; this function saves global data
+    """
     global RAW_DATA, data
     RAW_DATA = [[item for item in line.split(",")] for line in lines]
     data = MyDict({label: list(set(line[i] for line in RAW_DATA))
-                   for i, label in enumerate(LABELS.ordered())})
+                  if label != LABELS.viewers else [line[i] for line in RAW_DATA]
+                  for i, label in enumerate(LABELS.ordered())})
+
+
+def load():
+    with open('show_results.txt', 'r') as ifile:
+        try:
+            lines = [line.rstrip() for line in ifile.readlines()]
+        except FileNotFoundError:
+            print("Could not find input file.")
+        else:
+            _save_data(lines)
 
 
 def _print_dict(particular_dict=None, pretty=True):
@@ -122,43 +142,32 @@ def _get_show_stats(current_viewer_dict=None):
         stats[LABELS.total][show] = sum(val for val in by_show[show].values())
         stats[LABELS.percent][show] = "{:2.2f}".format((stats[LABELS.total][show] / total_viewers) * 100)
     return stats
-
-
-def _swap_last_columns(data_frame):
-    cols = list(data_frame)
-    cols[-2], cols[-1] = cols[-1], cols[-2]
-    return data_frame[cols]
-
-
-def load():
-    with open('show_results.txt', 'r') as ifile:
-        try:
-            lines = [line.rstrip() for line in ifile.readlines()]
-        except FileNotFoundError:
-            print("Could not find input file.")
-        else:
-            _save_data(lines)
 # endregion
 
 
 # region NUMPY ARRAYS
 @make_pretty("NUMPY ARRAY (whole)")
-def create_numpy_array():
+def create_numpy_array():  # questions 3-4
     global n_array, RAW_DATA
     if RAW_DATA:
         n_array = np.array(RAW_DATA)
         pp.pprint(n_array)
 
 
-@make_pretty("NUMPY ARRAYS (separate)")
-def div_arrays():
+@make_pretty("SEPARATED REGULAR ARRAYS")
+def div_arrays_reg():  # questions 5-6
+    _print_dict(data, False)
+
+
+@make_pretty("SEPARATED NUMPY ARRAYS")
+def div_arrays_np():  # questions 7-8
     global data
     n_arrays = {label: np.array(lst) for label, lst in data.items()}
     _print_dict(n_arrays)
 
 
-@make_pretty("SORT ARRAYS")
-def sort_arrays():
+@make_pretty("SORTED ARRAYS")
+def sort_arrays():  # questions 9-12
     global data
     viewers = LABELS.viewers
     data = MyDict({label: sorted(lst) if label != viewers else [int(i) for i in lst]
@@ -171,17 +180,28 @@ def sort_arrays():
 
 # region DATA FRAMES
 @make_pretty("DATA FRAMES")
-def data_frames():
+def data_frames():  # questions 13-17
     viewer_frame = pd.DataFrame.from_dict(_get_viewers_by_state())
-    stats_frame = pd.DataFrame.from_dict(_get_show_stats())
+    stats_frame = pd.DataFrame.from_dict(_get_show_stats())[[lb for lb in LABELS.ordered_stats()]]
+
     print(viewer_frame, end="\n\n")
-    print(_swap_last_columns(stats_frame))
+    print(stats_frame, end="\n\n")
+
+    gen = lambda: (float(i) for i in stats_frame[LABELS.percent].values)
+    max_percent = max(gen())
+    min_percent = min(gen())
+
+    print(LABELS.max_pct+':', max_percent)
+    print(LABELS.min_pct+':', min_percent)
+    print(LABELS.favorite+':', 'Game of Thrones')
 # endregion
 
 
 def main():
     load()
-    div_arrays()
+    create_numpy_array()
+    div_arrays_reg()
+    div_arrays_np()
     sort_arrays()
     data_frames()
 
