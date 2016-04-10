@@ -1,4 +1,14 @@
+
 Debug/
 *.vcxproj
 *.vcxproj.filters
 *.doc
+
+__pycache__
+.idea
+*.zip
+*.txt
+
+!tp-*.txt
+!ep-*.txt
+!out-*.txt
